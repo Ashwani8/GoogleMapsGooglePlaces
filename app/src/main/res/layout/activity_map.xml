@@ -16,5 +16,12 @@
 
         android:name="com.google.android.gms.maps.SupportMapFragment" />
     <!-- Default is .MapsActivity, It works with  .MapActivity my activity name -->
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        >
+
+
+    </RelativeLayout>
 
 </RelativeLayout>
