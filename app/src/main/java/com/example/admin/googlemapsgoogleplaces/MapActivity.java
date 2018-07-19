@@ -37,7 +37,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private boolean mLocationPermissionGranted = false;
     private GoogleMap mMap;
     private FusedLocationProviderClient mFusedLocationProviderClient;
-    private static final float DEFAULT_ZOOM = 15f;
+    private static final float DEFAULT_ZOOM = 18f;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -155,7 +155,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             mMap.setMyLocationEnabled(true); // display the Blue dot
 
             // Hide the center location GPS icon on the Map
-            mMap.getUiSettings().setMyLocationButtonEnabled(false);
+//            mMap.getUiSettings().setMyLocationButtonEnabled(false);
 
         }
     }
