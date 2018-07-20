@@ -2,6 +2,8 @@ package com.example.admin.googlemapsgoogleplaces;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -10,6 +12,10 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.KeyEvent;
+import android.view.inputmethod.EditorInfo;
+import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -22,6 +28,10 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * created on April 10 2018
  */
@@ -33,6 +43,10 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private static final String FINE_LOCATION = Manifest.permission.ACCESS_FINE_LOCATION;
     private static final String COARSE_LOCATION = Manifest.permission.ACCESS_COARSE_LOCATION;
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1234;
+
+    // widgets
+    private EditText mSearchText;
+
     // variables
     private boolean mLocationPermissionGranted = false;
     private GoogleMap mMap;
@@ -43,9 +57,55 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
+        mSearchText = (EditText) findViewById(R.id.et_search_input);
 
         getLocationPermission(); // use this methods to check for location permission
+
     }
+    // search bar operation initializing and setting its behavior for enter and arrow keys
+    private void init(){
+        Log.d(TAG,"init: initializing");
+        mSearchText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent keyEvent) {
+                if(actionId == EditorInfo.IME_ACTION_SEARCH
+                        || actionId == EditorInfo.IME_ACTION_DONE
+                        || keyEvent.getAction() == KeyEvent.ACTION_DOWN
+                        || keyEvent.getAction() == KeyEvent.KEYCODE_ENTER){
+
+                    // Execute our method of searching
+                    geoLocate();
+
+                }
+
+                return false;
+            }
+        });
+    }
+    // searching method
+    private void geoLocate() {
+        Log.d(TAG, "geoLocate: geo locating");
+        // getting search string from user
+        String searchString = mSearchText.getText().toString();
+
+        //create geoCoder object
+        Geocoder geocoder = new Geocoder(MapActivity.this);
+
+        // create list of address results
+        List<Address> list = new ArrayList<>();
+        try{
+            list = geocoder.getFromLocationName(searchString, 1);
+
+        }catch (IOException e){
+            Log.d(TAG, "geoLocate: catch the IOException" + e.getMessage());
+
+        }
+        if(list.size() > 0){
+            Address address = list.get(0);
+            Log.d(TAG, "geoLocation: found a location: " + address.toString());
+        }
+    }
+
 
     private void getDeviceLocation() {
         Log.d(TAG, "getDeviceLocation:getting the current location of the device");
@@ -79,6 +139,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         }
 
     }
+
 
     private void moveCamera(LatLng latlng, float zoom) {
         Log.d(TAG, "moveCamera: moving camera to: lat: " + latlng.latitude + ", lng: " + latlng.longitude);
@@ -156,6 +217,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
             // Hide the center location GPS icon on the Map
 //            mMap.getUiSettings().setMyLocationButtonEnabled(false);
+            init();
 
         }
     }
