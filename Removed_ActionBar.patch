@@ -1,0 +1,65 @@
+Index: app/src/main/java/com/example/admin/googlemapsgoogleplaces/MapActivity.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/java/com/example/admin/googlemapsgoogleplaces/MapActivity.java	(revision ff30547875ec6a4ad149c6599b111bd688d54242)
++++ app/src/main/java/com/example/admin/googlemapsgoogleplaces/MapActivity.java	(revision e7d4242534b11dc8f545b783b36b2c03716190a4)
+@@ -37,7 +37,7 @@
+     private boolean mLocationPermissionGranted = false;
+     private GoogleMap mMap;
+     private FusedLocationProviderClient mFusedLocationProviderClient;
+-    private static final float DEFAULT_ZOOM = 15f;
++    private static final float DEFAULT_ZOOM = 18f;
+ 
+     @Override
+     protected void onCreate(@Nullable Bundle savedInstanceState) {
+@@ -155,7 +155,7 @@
+             mMap.setMyLocationEnabled(true); // display the Blue dot
+ 
+             // Hide the center location GPS icon on the Map
+-            mMap.getUiSettings().setMyLocationButtonEnabled(false);
++//            mMap.getUiSettings().setMyLocationButtonEnabled(false);
+ 
+         }
+     }
+Index: app/src/main/res/layout/activity_map.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/res/layout/activity_map.xml	(revision ff30547875ec6a4ad149c6599b111bd688d54242)
++++ app/src/main/res/layout/activity_map.xml	(revision e7d4242534b11dc8f545b783b36b2c03716190a4)
+@@ -2,6 +2,7 @@
+ 
+ <RelativeLayout
+     xmlns:android="http://schemas.android.com/apk/res/android"
++
+     android:layout_width="match_parent"
+     android:layout_height="match_parent">
+ 
+@@ -12,6 +13,7 @@
+         android:id="@+id/map"
+         tools:context=".MapsActivity"
+ 
++
+         android:name="com.google.android.gms.maps.SupportMapFragment" />
+     <!-- Default is .MapsActivity, It works with  .MapActivity my activity name -->
+ 
+Index: app/src/main/res/values/styles.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/res/values/styles.xml	(revision ff30547875ec6a4ad149c6599b111bd688d54242)
++++ app/src/main/res/values/styles.xml	(revision e7d4242534b11dc8f545b783b36b2c03716190a4)
+@@ -1,7 +1,8 @@
+ <resources>
+ 
+     <!-- Base application theme. -->
+-    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
++    <!-- remove the action bar from the top by replacing DarkActionBar with NoActionBar-->
++    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+         <!-- Customize your theme here. -->
+         <item name="colorPrimary">@color/colorPrimary</item>
+         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>

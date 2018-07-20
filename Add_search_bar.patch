@@ -1,0 +1,278 @@
+Index: app/src/main/java/com/example/admin/googlemapsgoogleplaces/MapActivity.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/java/com/example/admin/googlemapsgoogleplaces/MapActivity.java	(revision f76ad1dcefa612bc80a2d55a2897fe0978d8d084)
++++ app/src/main/java/com/example/admin/googlemapsgoogleplaces/MapActivity.java	(revision 0597e9918cf477ce2e5741b5e2ccdfbcce491972)
+@@ -2,6 +2,8 @@
+ 
+ import android.Manifest;
+ import android.content.pm.PackageManager;
++import android.location.Address;
++import android.location.Geocoder;
+ import android.location.Location;
+ import android.os.Bundle;
+ import android.support.annotation.NonNull;
+@@ -10,6 +12,10 @@
+ import android.support.v4.content.ContextCompat;
+ import android.support.v7.app.AppCompatActivity;
+ import android.util.Log;
++import android.view.KeyEvent;
++import android.view.inputmethod.EditorInfo;
++import android.widget.EditText;
++import android.widget.TextView;
+ import android.widget.Toast;
+ 
+ import com.google.android.gms.location.FusedLocationProviderClient;
+@@ -22,6 +28,10 @@
+ import com.google.android.gms.tasks.OnCompleteListener;
+ import com.google.android.gms.tasks.Task;
+ 
++import java.io.IOException;
++import java.util.ArrayList;
++import java.util.List;
++
+ /**
+  * created on April 10 2018
+  */
+@@ -33,6 +43,10 @@
+     private static final String FINE_LOCATION = Manifest.permission.ACCESS_FINE_LOCATION;
+     private static final String COARSE_LOCATION = Manifest.permission.ACCESS_COARSE_LOCATION;
+     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1234;
++
++    // widgets
++    private EditText mSearchText;
++
+     // variables
+     private boolean mLocationPermissionGranted = false;
+     private GoogleMap mMap;
+@@ -43,9 +57,55 @@
+     protected void onCreate(@Nullable Bundle savedInstanceState) {
+         super.onCreate(savedInstanceState);
+         setContentView(R.layout.activity_map);
++        mSearchText = (EditText) findViewById(R.id.et_search_input);
+ 
+         getLocationPermission(); // use this methods to check for location permission
++
+     }
++    // search bar operation initializing and setting its behavior for enter and arrow keys
++    private void init(){
++        Log.d(TAG,"init: initializing");
++        mSearchText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
++            @Override
++            public boolean onEditorAction(TextView v, int actionId, KeyEvent keyEvent) {
++                if(actionId == EditorInfo.IME_ACTION_SEARCH
++                        || actionId == EditorInfo.IME_ACTION_DONE
++                        || keyEvent.getAction() == KeyEvent.ACTION_DOWN
++                        || keyEvent.getAction() == KeyEvent.KEYCODE_ENTER){
++
++                    // Execute our method of searching
++                    geoLocate();
++
++                }
++
++                return false;
++            }
++        });
++    }
++    // searching method
++    private void geoLocate() {
++        Log.d(TAG, "geoLocate: geo locating");
++        // getting search string from user
++        String searchString = mSearchText.getText().toString();
++
++        //create geoCoder object
++        Geocoder geocoder = new Geocoder(MapActivity.this);
++
++        // create list of address results
++        List<Address> list = new ArrayList<>();
++        try{
++            list = geocoder.getFromLocationName(searchString, 1);
++
++        }catch (IOException e){
++            Log.d(TAG, "geoLocate: catch the IOException" + e.getMessage());
++
++        }
++        if(list.size() > 0){
++            Address address = list.get(0);
++            Log.d(TAG, "geoLocation: found a location: " + address.toString());
++        }
++    }
++
+ 
+     private void getDeviceLocation() {
+         Log.d(TAG, "getDeviceLocation:getting the current location of the device");
+@@ -80,6 +140,7 @@
+ 
+     }
+ 
++
+     private void moveCamera(LatLng latlng, float zoom) {
+         Log.d(TAG, "moveCamera: moving camera to: lat: " + latlng.latitude + ", lng: " + latlng.longitude);
+         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latlng, zoom));
+@@ -156,6 +217,7 @@
+ 
+             // Hide the center location GPS icon on the Map
+ //            mMap.getUiSettings().setMyLocationButtonEnabled(false);
++            init();
+ 
+         }
+     }
+Index: app/src/main/res/layout/activity_map.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/res/layout/activity_map.xml	(revision f76ad1dcefa612bc80a2d55a2897fe0978d8d084)
++++ app/src/main/res/layout/activity_map.xml	(revision 0597e9918cf477ce2e5741b5e2ccdfbcce491972)
+@@ -17,9 +17,34 @@
+         android:name="com.google.android.gms.maps.SupportMapFragment" />
+     <!-- Default is .MapsActivity, It works with  .MapActivity my activity name -->
+     <RelativeLayout
++        android:id="@+id/relLayout1"
+         android:layout_width="match_parent"
+-        android:layout_height="50dp"
+-        >
++        android:layout_height="48dp"
++        android:layout_marginTop="8dp"
++        android:layout_marginRight="8dp"
++        android:layout_marginLeft="8dp"
++        android:background="@drawable/white_border"
++                >
++        <ImageView
++            android:id="@+id/ic_magnify"
++            android:layout_width="16dp"
++            android:layout_height="16dp"
++            android:layout_centerVertical="true"
++            android:layout_marginLeft="8dp"
++            android:src="@drawable/ic_magnify"
++            />
++        <EditText
++            android:id="@+id/et_search_input"
++            android:layout_width="match_parent"
++            android:layout_height="match_parent"
++            android:layout_toRightOf="@id/ic_magnify"
++            android:layout_centerVertical="true"
++            android:textSize="16sp"
++            android:textColor="#000"
++            android:background="@null"
++            android:hint="Enter Address, City, or Zip Code"
++            android:imeOptions="actionSearch"
++            />
+ 
+ 
+     </RelativeLayout>
+diff --git app/src/main/res/drawable-hdpi/ic_magnify.png app/src/main/res/drawable-hdpi/ic_magnify.png
+new file mode 100644
+index 0000000000000000000000000000000000000000..ca8cb2da47a2de5cf244b75b936b79a3f96815fa
+GIT binary patch
+literal 870
+zc$@)d1DX7ZP)<h;3K|Lk000e1NJLTq001xm001xu1^@s6R|5Hm0009mNkl<Zc-rk)
+z-AhzK6hC|Yiat~*D+`67f=a>+3fGEKA<)8yFz6wu5Z@~ZdWcFXLa>L0K%yd|qKL8&
+zvka=;)!owiqx#M41p9I3?%q2y>#lX+w-5Ku{^tB<&OI~d5dFip4%h+o0R6x*U_a0b
+z)K;p~8-cUr(F2N568HuD&ch-wgE3<md#F;xY=T4A;8>b*xES8x|0jT&<#5~shT%j!
+zgyXpoyGGPrPUq`o81P{d7GJ>|Etm7LBF+e5?=fx)xCKlCPt>>J_rDbQd)<bON8>&Y
+ze8HFzV4LRu4ZvY=+{M@>4aWk;>~kgHv?gqp;M8TjZ!VE10(9Z`l}5x&0Irg)6~qZ<
+zvNYZeDyM>4lQtYhX0seTH`tXY8ZcyD1@4Co_fNdrX>;|{%qm?9x$^neBEO$P{xMqu
+z&NC}Chv$tJ_xKDmM?!{~h46V?Ku&bd@;BB1-dSdzK2zc*5X~3ld7?H4N%|@iMpsN}
+zcWLf0F6;;+V9J#AC_@@^Bw)K{u{;yf0Y<=eM*`NXD|hyMpG^fEX9V1KBw#ah(tk7+
+z5M>11cO+mBGuI2#v!<Q7czttJO`T!{OqySx#i3Q0pAR@lqcLWl3pR)+%J3buvDX!%
+z4jbhCn#<O1i>p7bNuhOisxWa!FWiM^c(=v^e;-@mh%Sdk8`j+0C#1me)}d((%;Mcz
+zn*!?K>{E@1dm$^RUTs&yyw1=b^$ATGC=Q&V5@U8NMBmib#hC;VAx9?S^@mSk{}v8h
+z#JGd1*V8NumP~auqzd|!Z+9Zojuf@VYF8o#i-^drne`nA9Trs!W=<CWjx5TSf#JJz
+zcffg)5gW(zPFEsYWV{An;cR?T{n3aFH@?T3aJdu0_Nvo*A%NrWR9V`X)0P+aEPniV
+z*CK>%km*nKbUb>5Nk1ruM5w)%cbys<RUuLD6Pmh(h`a3C={ned5hN{k`-n)CTZBoH
+zNc!wVS2c*}VLBpZ{U&VfM9L?eI;%y*{7ML?<Vpyqib=6yO`l>tdT!c+S<VzYjptja
+wiY)uXo|ZL66<Rj}=4G|5e7@Dvf2&aY13^rt^`bbN{r~^~07*qoM6N<$f=e5h`Tzg`
+
+diff --git app/src/main/res/drawable-mdpi/ic_magnify.png app/src/main/res/drawable-mdpi/ic_magnify.png
+new file mode 100644
+index 0000000000000000000000000000000000000000..78fbc35cfd8ce5cc4815d86f59607d3010deeb74
+GIT binary patch
+literal 575
+zc$@)00>J%=P)<h;3K|Lk000e1NJLTq001BW001Be1^@s6b9#F800068Nkl<Zc-muN
+z803Hph&>sY7#e|iDFY+J79idPWX}QOBA}cJ5Hr!jVm2U-2U@llh|l1~Objc4YOSeh
+zxj4|!g#;}|#ixOK%7A)VD7PFG#F&P!fChOq5GMiIbwKf*SVE%%D9=oOuro0%LNjm)
+zP}~TIdXR5}fa><4>B%D30f}e^bpypXh|njG7HTJeVrryX&W+*|P)HDGISi-*^&LTT
+zJW0SCCC(Wb^hpjsCWc%jGmZmAgh<icg5>(8WJaMRQ2!~oISdSLq&Q#&k^}O|bO0j|
+zt|c!qGBWHya(M*VnV5-T8j=I5NO8b6BnQM&;DA|34yYhS;{x(rj%Es~N0La<T8@;0
+zw~|@GXrYuN3=Ec}XtqMr>`jLMyO7M-M`Aew4!*TW2J8ZgNs*x616+O}qOp*iICMg*
+zT-E`_6o}C0j#3ITGVCF(5JJuikXjDe5r=?vTN+SK6eGkK7}SAeJBrUC(dSHALxhQ;
+z4@-T25?Uos0^;dds%+#+Y#tD|0?iU5*AcAXI7BX13FEy$eXc-#i_xM`jFQmM0U9_F
+zT)pD9_yAB%F+9#ubHW*L!luv>3{V5SfrjUS(+CqoHINTV7dFsFD>9J65<OIL1StUI
+zh>e565t|01Bi4;Z2ehnM2rl>rC?xg+`FaD<&y<3;HwVOW<T_+<0RSl9ydPzmcB23Q
+N002ovPDHLkV1iSS<+=a>
+
+diff --git app/src/main/res/drawable-xhdpi/ic_magnify.png app/src/main/res/drawable-xhdpi/ic_magnify.png
+new file mode 100644
+index 0000000000000000000000000000000000000000..feb714b053d327bbe9b504583877e1ed420b9d55
+GIT binary patch
+literal 1155
+zc$@))1bq96P)<h;3K|Lk000e1NJLTq002M$002M;1^@s6s%dfF000C^Nkl<Zc-rk+
+z`%6?o6h3=3?cpOewEV$DsqBd%1Vsvxy+KG~OOjq#K@>gE=mA0|1x8Uu@5m@B%U)Du
+zO4)<TR{Nv+?%W${de5D8cV^bzJ@Cn{d+(f?Z_b=KbIuSYB`ML6RG<{7C5w&#?Z7SI
+z0dNoK0M6j|2A~4Siibf5fCXZ}0eS-r0DmMf1boJOm+*cKkTw|yUXB4=!>5qspgA($
+zqP-w6Z88kL00VDDrw1b(_;~0>`>R}nV{+D4<L?Ir10RVH2tEc~Q)7*Q9q8OI#e*M)
+zMK_=`CpKo@q5~5&`F`Lf&@&-lVbLS#&ogcI4U&WZ?RK~kD03Z}<+fqD+hhT-8Q(7A
+zzh5LtxQ}--O%YHfv9%4Nlh^U=vM}4u!Fz|Kh_L8_OQKepE#dHb@mw{K5`msV5hVGM
+zKvbuD-M9J7N*A6hj*`A~w0GQRsr8FV(IgdYXDoV(XR@QL(>C$_ZeZl4w^i5d-(+Uu
+zBc7S7NOy{l<^6Qe8%kv{Gy5Uo7}d%Q=y}0d!6~)sEox?zcWCm)H9i)oY+Fo&f_I+#
+zJkcUeKFD4Qoy?A)%nHjqBQ_@>(J8fzB{r#2x|Lylr)C23q4$Re0T0zIMT<@_1e9nd
+zz!I4x@0cK6g~|@kaMy|DbyLv7Oh~>8g<g)Q$3!d+jRzS5N>wQA@>p|E3}tD83;|13
+z5b)ST;cG(#>|zL5sDgky9tyu3S^`ZB0YxelwlNB`3=q)H1Z5d2RPJL4sMb9E>CpS$
+zqd#^UeToXDl}z+?Rx<(1nZC5EQaTF?zIiC_6DKu&=HJX%W4)PN0MTwu!=ED@@A&-~
+zP~!k)4k3;e<Y}1w7RLPVMwo+?N=WoE9XPMb0l8Ae)DVX7`+6NFxR)(v+POP5fzf=l
+z`iUX`8EGn@W-^J9fBSHKl!K#rX!jLce;`_`a~oRclcu%{A}6DCEUjc`-kJT&x}#Bx
+zbw;D>cPl5@xqQ5JTB2^)tLFIYFB#&Bi_9elr#!ZXoQf{zAMCRC5<GvDi8=oFIaOp(
+z3fMIDSbP;XN9;g`Xph)diMHeWVc?v5m1Zc+D)DW!u?g4+tT1sfEA-42=!flqx0yJe
+z=el=-bPTdjEGOH)co%4bCYD302#3AH)JS3PELX|7M_@~x&$bvel&GO%u`S78i<7x2
+z*6l`lBiHv9-}^+)a<EL05D<Ae$FcQCa3QLb>{}!D`G2fbOWaN|<`YH|kqc}Paf3zA
+zMHSb}Z0!uQMOVlvw3PUy+buUqBSS)vVnkBi*(?(Ky|ZnVi#VTXCONl4!<j9cghq+2
+zb1;@jP?fG5lq4Y#j|7CX9E>@}SR)~!Eg=-oJ|W;b#)S3>fiNr~=@XJZVK`WdYZ4MZ
+zSn_v_PI4tRUJ2lrgI)eNc=g^a3C_%CQ-a875}cV&n8A+@mJ-D5IZ30WBqb@F`~_9K
+V@9(JXyxjl*002ovPDHLkV1koP6qEn}
+
+diff --git app/src/main/res/drawable-xxhdpi/ic_magnify.png app/src/main/res/drawable-xxhdpi/ic_magnify.png
+new file mode 100644
+index 0000000000000000000000000000000000000000..7a5d3668a6315181f1577edbf9af0c5fceef05a2
+GIT binary patch
+literal 1866
+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
+Eg6$N5y#N3J
+
