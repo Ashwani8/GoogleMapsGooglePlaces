@@ -216,7 +216,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             mMap.setMyLocationEnabled(true); // display the Blue dot
 
             // Hide the center location GPS icon on the Map
-        //            mMap.getUiSettings().setMyLocationButtonEnabled(false);
+        //   mMap.getUiSettings().setMyLocationButtonEnabled(false);
             init();
 
         }
