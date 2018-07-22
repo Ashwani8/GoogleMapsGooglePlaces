@@ -25,6 +25,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 
@@ -103,6 +104,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         if(list.size() > 0){
             Address address = list.get(0);
             Log.d(TAG, "geoLocation: found a location: " + address.toString());
+            // move camera to the address found i.e. go the place we found/clicked in serach
+            moveCamera(new LatLng(address.getLatitude(),address.getLongitude()),DEFAULT_ZOOM,
+                    address.getAddressLine(0));
         }
     }
 
@@ -122,7 +126,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                             Location currentLocation = (Location) task.getResult();
 
                             moveCamera(new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude()),
-                                    DEFAULT_ZOOM);
+                                    DEFAULT_ZOOM, "My Location");
 
                         } else {
                             Log.d(TAG, "onComplete: current location is null");
@@ -141,9 +145,15 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     }
 
 
-    private void moveCamera(LatLng latlng, float zoom) {
+    private void moveCamera(LatLng latlng, float zoom, String title) {
         Log.d(TAG, "moveCamera: moving camera to: lat: " + latlng.latitude + ", lng: " + latlng.longitude);
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latlng, zoom));
+
+        // create an object MakerOptions which will be used in conjunction with add a marker
+        MarkerOptions options = new MarkerOptions()
+                .position(latlng)
+                .title(title);
+        mMap.addMarker(options);
     }
 
     private void initMap() {
