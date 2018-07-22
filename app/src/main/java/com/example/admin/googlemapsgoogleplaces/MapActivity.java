@@ -13,6 +13,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -82,6 +83,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 return false;
             }
         });
+        hideSoftKeyBoard(); // hide soft key board
     }
     // searching method
     private void geoLocate() {
@@ -148,12 +150,17 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private void moveCamera(LatLng latlng, float zoom, String title) {
         Log.d(TAG, "moveCamera: moving camera to: lat: " + latlng.latitude + ", lng: " + latlng.longitude);
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latlng, zoom));
+        hideSoftKeyBoard();
 
-        // create an object MakerOptions which will be used in conjunction with add a marker
-        MarkerOptions options = new MarkerOptions()
+        // create an object MakerOptions which will be used in conjunction with add a marker at all
+        // locations except my location (blue dot)
+        if(!title.equals("My Location")){MarkerOptions options = new MarkerOptions()
                 .position(latlng)
                 .title(title);
         mMap.addMarker(options);
+
+        }
+
     }
 
     private void initMap() {
@@ -231,7 +238,10 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
         }
     }
-
+    // hide soft keyboard after search is done
+    private void hideSoftKeyBoard(){
+        this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
+    }
 
 }
 
