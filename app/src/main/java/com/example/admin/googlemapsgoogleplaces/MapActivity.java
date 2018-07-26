@@ -13,19 +13,25 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.View;
 import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
-import android.widget.EditText;
+import android.widget.AutoCompleteTextView;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.places.AutocompletePredictionBufferResponse;
+import com.google.android.gms.location.places.GeoDataClient;
+import com.google.android.gms.location.places.PlaceDetectionClient;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -45,28 +51,56 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private static final String FINE_LOCATION = Manifest.permission.ACCESS_FINE_LOCATION;
     private static final String COARSE_LOCATION = Manifest.permission.ACCESS_COARSE_LOCATION;
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1234;
-
+    private static final float DEFAULT_ZOOM = 18f;
+    private static final LatLngBounds BOUNDS_GREATER_SYDNEY = new LatLngBounds(
+            new LatLng(-34.041458, 150.790100), new LatLng(-33.682247, 151.383362));
     // widgets
-    private EditText mSearchText;
+    private AutoCompleteTextView mSearchText;
+    private ImageView mGps;
+
 
     // variables
     private boolean mLocationPermissionGranted = false;
     private GoogleMap mMap;
     private FusedLocationProviderClient mFusedLocationProviderClient;
-    private static final float DEFAULT_ZOOM = 18f;
+   private PlaceAutocompleteAdapter mAdapter;
+
+    // needed both to replace GoogleApiClient, has advantage of being async and connection call back
+    // no longer needed, return Task rather than Pending results.
+    private GeoDataClient mGeoDataClient;
+    private PlaceDetectionClient mPlaceDetectionClient;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
-        mSearchText = (EditText) findViewById(R.id.et_search_input);
 
+        // Retrieve the AutoCompleteTextView that will display Place suggestions.
+        mSearchText = (AutoCompleteTextView) findViewById(R.id.search_input);
+        // add gps icon
+        mGps = (ImageView) findViewById(R.id.ic_gps);
+
+        // Construct a GeoDataClient.
+
+
+        // Construct a PlaceDetectionClient.
+//        mPlaceDetectionClient = Places.getPlaceDetectionClient(this, null);
         getLocationPermission(); // use this methods to check for location permission
 
     }
     // search bar operation initializing and setting its behavior for enter and arrow keys
     private void init(){
         Log.d(TAG,"init: initializing");
+        // Construct a GeoDataClient for the Google Places API for Android.
+            Task<AutocompletePredictionBufferResponse> results =
+                    mGeoDataClient.getAutocompletePredictions(mSearchText.getText().toString(),BOUNDS_GREATER_SYDNEY,null);
+
+        // Set up the adapter that will retrieve suggestions from the Places Geo Data Client.
+
+//        mAdapter = new PlaceAutocompleteAdapter(this, mGeoDataClient,BOUNDS_GREATER_SYDNEY,null);
+//        mSearchText.getAdapter(mAdapter);
+
+        // Register a listener that receives callbacks when a suggestion has been selected
         mSearchText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent keyEvent) {
@@ -81,6 +115,13 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 }
 
                 return false;
+            }
+        });
+        mGps.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d(TAG, "onClick: clicked gps icon");
+                getDeviceLocation();
             }
         });
         hideSoftKeyBoard(); // hide soft key board
